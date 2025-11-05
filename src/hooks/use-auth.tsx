@@ -7,6 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
+  getAuth,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 import { addUser } from '@/lib/actions';
@@ -48,10 +49,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
+    const authInstance = getAuth();
+    authInstance.tenantId = auth.tenantId; // This line might be unnecessary but can help in some cases.
+  
     try {
-      await signInWithPopup(auth, provider);
+      // This is where we explicitly set the auth domain for the popup.
+      const authForPopup = getAuth();
+      if (process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) {
+        authForPopup.config = {
+          ...authForPopup.config,
+          authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+        };
+      }
+      await signInWithPopup(authForPopup, provider);
     } catch (error) {
       console.error('Error signing in with Google', error);
+    } finally {
       setLoading(false);
     }
   };
