@@ -60,7 +60,15 @@ let transactions: Transaction[] = [
 
 // --- User Functions ---
 
-export const db_findUserBy = async (field: keyof User, value: string): Promise<User | undefined> => {
+export const db_findUserBy = async (field: 'uid' | 'email' | 'emailOrUid', value: string): Promise<User | undefined> => {
+  if (field === 'emailOrUid') {
+    // Try finding by email (case-insensitive) first, then by UID
+    let user = users.find((u) => u.email.toLowerCase() === value.toLowerCase());
+    if (!user) {
+      user = users.find((u) => u.uid === value);
+    }
+    return user;
+  }
   if (field === 'email') {
     return users.find((user) => user.email.toLowerCase() === value.toLowerCase());
   }

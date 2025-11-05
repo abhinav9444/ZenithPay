@@ -45,10 +45,8 @@ export async function sendMoney(
     return { success: false, message: 'Insufficient balance.' };
   }
 
-  let receiver = await db_findUserBy('email', receiverIdentifier);
-  if (!receiver) {
-    receiver = await db_findUserBy('uid', receiverIdentifier);
-  }
+  // The db_findUserBy now handles both email and UID, so we just call it once.
+  const receiver = await db_findUserBy('emailOrUid', receiverIdentifier);
   
   if (!receiver) {
     return { success: false, message: 'Receiver not found.' };
