@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error signing in with Google', error);
     } finally {
-      setLoading(false);
+      // setLoading will be handled by onAuthStateChanged
     }
   };
 
@@ -68,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error signing out', error);
     } finally {
+      setUser(null);
       setLoading(false);
     }
   };

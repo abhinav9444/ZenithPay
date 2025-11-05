@@ -19,7 +19,7 @@ let users: User[] = [
     name: 'John Doe',
     photoURL: 'https://picsum.photos/seed/user1/100/100',
     balance: 5000.75,
-    accountNumber: generateAccountNumber(),
+    accountNumber: 'AB12CD',
   },
   {
     uid: 'user-2-uid',
@@ -27,7 +27,7 @@ let users: User[] = [
     name: 'Jane Smith',
     photoURL: 'https://picsum.photos/seed/user2/100/100',
     balance: 1250.25,
-    accountNumber: generateAccountNumber(),
+    accountNumber: 'EF34GH',
   },
   {
     uid: 'user-3-uid',
@@ -35,7 +35,7 @@ let users: User[] = [
     name: 'Banker Bob',
     photoURL: 'https://picsum.photos/seed/user3/100/100',
     balance: 1000000,
-    accountNumber: generateAccountNumber(),
+    accountNumber: 'IJ56KL',
   }
 ];
 
@@ -75,10 +75,7 @@ let transactions: Transaction[] = [
 // --- User Functions ---
 
 export const db_findUserBy = async (field: 'uid' | 'email' | 'accountNumber', value: string): Promise<User | undefined> => {
-    let queryValue = value;
-    if (field === 'email' || field === 'accountNumber') {
-      queryValue = value.toLowerCase();
-    }
+    const queryValue = value.toLowerCase();
 
     return users.find((user) => {
         if (field === 'email') {
@@ -87,23 +84,29 @@ export const db_findUserBy = async (field: 'uid' | 'email' | 'accountNumber', va
         if (field === 'accountNumber') {
             return user.accountNumber.toLowerCase() === queryValue;
         }
-        return user[field] === queryValue;
+        return user[field] === value; // uid is case-sensitive
     });
 };
 
 export const db_addUser = async (newUser: { uid: string; email: string; name: string; photoURL: string }): Promise<User> => {
   const existingUser = await db_findUserBy('uid', newUser.uid);
   if (existingUser) {
-    // Ensure existing users have an account number if they don't have one.
     if (!existingUser.accountNumber) {
         existingUser.accountNumber = generateAccountNumber();
     }
     return existingUser;
   }
+
+  // Check if account number already exists, and regenerate if it does.
+  let newAccountNumber = generateAccountNumber();
+  while(await db_findUserBy('accountNumber', newAccountNumber)){
+    newAccountNumber = generateAccountNumber();
+  }
+
   const user: User = {
     ...newUser,
     balance: 1000, // Initial balance for new users
-    accountNumber: generateAccountNumber(),
+    accountNumber: newAccountNumber,
   };
   users.push(user);
   return user;
