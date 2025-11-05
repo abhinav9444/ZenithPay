@@ -28,7 +28,7 @@ export async function addUser(user: { uid: string; email: string; name: string; 
 
 export async function sendMoney(
   senderUid: string,
-  receiverIdentifier: string, // Can be email or UID
+  receiverAccountNumber: string,
   amount: number,
   description: string
 ): Promise<{ success: boolean; message: string }> {
@@ -45,8 +45,7 @@ export async function sendMoney(
     return { success: false, message: 'Insufficient balance.' };
   }
 
-  // The db_findUserBy now handles both email and UID, so we just call it once.
-  const receiver = await db_findUserBy('emailOrUid', receiverIdentifier);
+  const receiver = await db_findUserBy('accountNumber', receiverAccountNumber);
   
   if (!receiver) {
     return { success: false, message: 'Receiver not found.' };

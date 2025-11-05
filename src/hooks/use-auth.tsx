@@ -1,6 +1,7 @@
 'use client';
 
 import type { User as FirebaseUser } from 'firebase/auth';
+import type { User } from '@/lib/types';
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import {
   onAuthStateChanged,
@@ -9,11 +10,11 @@ import {
   signOut,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
-import { addUser } from '@/lib/actions';
+import { addUser, getUser } from '@/lib/actions';
 import { Loader2 } from 'lucide-react';
 
 interface AuthContextType {
-  user: FirebaseUser | null;
+  user: (FirebaseUser & { accountNumber?: string }) | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
@@ -22,20 +23,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<AuthContextType['user'] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
         // After first login, ensure user exists in our mock DB
         await addUser({
-          uid: user.uid,
-          email: user.email || '',
-          name: user.displayName || 'Anonymous',
-          photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/100/100`,
+          uid: firebaseUser.uid,
+          email: firebaseUser.email || '',
+          name: firebaseUser.displayName || 'Anonymous',
+          photoURL: firebaseUser.photoURL || `https://picsum.photos/seed/${firebaseUser.uid}/100/100`,
         });
-        setUser(user);
+        // Fetch the full user object with account number
+        const appUser = await getUser(firebaseUser.uid);
+        setUser({ ...firebaseUser, accountNumber: appUser?.accountNumber });
+
       } else {
         setUser(null);
       }
@@ -49,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      // Use the main 'auth' instance directly. This is the simplest approach.
       await signInWithPopup(auth, provider);
     } catch (error) {
       console.error('Error signing in with Google', error);

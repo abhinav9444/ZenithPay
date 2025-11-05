@@ -29,7 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
-  receiver: z.string().min(1, 'Receiver is required.'),
+  receiver: z.string().length(6, 'Account number must be 6 characters.'),
   amount: z.coerce.number().positive('Amount must be positive.'),
   description: z.string().min(1, 'Description is required.'),
 });
@@ -91,9 +91,9 @@ export function SendMoneyDialog({ open, onOpenChange }: SendMoneyDialogProps) {
               name="receiver"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Receiver's Email or UID</FormLabel>
+                  <FormLabel>Receiver's Account Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="user@example.com" {...field} />
+                    <Input placeholder="e.g. AB12CD" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

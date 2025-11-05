@@ -1,5 +1,16 @@
 import type { User, Transaction } from './types';
 
+// Helper to generate a random 6-digit alphanumeric account number
+const generateAccountNumber = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+
 // In-memory store to simulate a database
 let users: User[] = [
   {
@@ -8,6 +19,7 @@ let users: User[] = [
     name: 'John Doe',
     photoURL: 'https://picsum.photos/seed/user1/100/100',
     balance: 5000.75,
+    accountNumber: generateAccountNumber(),
   },
   {
     uid: 'user-2-uid',
@@ -15,6 +27,7 @@ let users: User[] = [
     name: 'Jane Smith',
     photoURL: 'https://picsum.photos/seed/user2/100/100',
     balance: 1250.25,
+    accountNumber: generateAccountNumber(),
   },
   {
     uid: 'user-3-uid',
@@ -22,6 +35,7 @@ let users: User[] = [
     name: 'Banker Bob',
     photoURL: 'https://picsum.photos/seed/user3/100/100',
     balance: 1000000,
+    accountNumber: generateAccountNumber(),
   }
 ];
 
@@ -60,29 +74,36 @@ let transactions: Transaction[] = [
 
 // --- User Functions ---
 
-export const db_findUserBy = async (field: 'uid' | 'email' | 'emailOrUid', value: string): Promise<User | undefined> => {
-  if (field === 'emailOrUid') {
-    // Try finding by email (case-insensitive) first, then by UID
-    let user = users.find((u) => u.email.toLowerCase() === value.toLowerCase());
-    if (!user) {
-      user = users.find((u) => u.uid === value);
+export const db_findUserBy = async (field: 'uid' | 'email' | 'accountNumber', value: string): Promise<User | undefined> => {
+    let queryValue = value;
+    if (field === 'email' || field === 'accountNumber') {
+      queryValue = value.toLowerCase();
     }
-    return user;
-  }
-  if (field === 'email') {
-    return users.find((user) => user.email.toLowerCase() === value.toLowerCase());
-  }
-  return users.find((user) => user[field] === value);
+
+    return users.find((user) => {
+        if (field === 'email') {
+            return user.email.toLowerCase() === queryValue;
+        }
+        if (field === 'accountNumber') {
+            return user.accountNumber.toLowerCase() === queryValue;
+        }
+        return user[field] === queryValue;
+    });
 };
 
 export const db_addUser = async (newUser: { uid: string; email: string; name: string; photoURL: string }): Promise<User> => {
   const existingUser = await db_findUserBy('uid', newUser.uid);
   if (existingUser) {
+    // Ensure existing users have an account number if they don't have one.
+    if (!existingUser.accountNumber) {
+        existingUser.accountNumber = generateAccountNumber();
+    }
     return existingUser;
   }
   const user: User = {
     ...newUser,
     balance: 1000, // Initial balance for new users
+    accountNumber: generateAccountNumber(),
   };
   users.push(user);
   return user;

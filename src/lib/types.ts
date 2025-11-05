@@ -4,6 +4,7 @@ export interface User {
   name: string;
   photoURL: string;
   balance: number;
+  accountNumber: string;
 }
 
 export interface Transaction {

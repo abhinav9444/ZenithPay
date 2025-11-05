@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User as UserIcon } from 'lucide-react';
-import type { User } from 'firebase/auth';
+import { LogOut, User as UserIcon, Copy } from 'lucide-react';
+import type { User as FirebaseUser } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 function getInitials(name: string | null | undefined): string {
     if (!name) return 'ZP';
@@ -25,8 +26,16 @@ function getInitials(name: string | null | undefined): string {
 }
 
 
-export function UserNav({ user }: { user: User }) {
+export function UserNav({ user }: { user: (FirebaseUser & { accountNumber?: string })}) {
   const { logout } = useAuth();
+  const { toast } = useToast();
+
+  const copyAccountNumber = () => {
+    if (user.accountNumber) {
+        navigator.clipboard.writeText(user.accountNumber);
+        toast({ title: "Copied!", description: "Account number copied to clipboard." });
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -49,6 +58,12 @@ export function UserNav({ user }: { user: User }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          {user.accountNumber && (
+            <DropdownMenuItem onClick={copyAccountNumber}>
+              <Copy className="mr-2 h-4 w-4" />
+              <span>Acc: {user.accountNumber}</span>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem>
             <UserIcon className="mr-2 h-4 w-4" />
             <span>Profile</span>
