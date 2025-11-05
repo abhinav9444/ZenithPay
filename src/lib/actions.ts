@@ -59,11 +59,9 @@ export async function sendMoney(
     return { success: false, message: "You cannot send money to yourself." };
   }
   
-  // Fraud Detection Logic
   if (!bypassWarning) {
     const senderHistory = await db_getUserHistory(sender.uid);
     
-    // 1. Velocity Check
     if (senderHistory.transactions.length > 0) {
         const oneMinuteAgo = Date.now() - 60 * 1000;
         const recentTxCount = senderHistory.transactions.filter(tx => new Date(tx.date).getTime() > oneMinuteAgo).length;
@@ -72,13 +70,11 @@ export async function sendMoney(
         }
     }
 
-    // 2. Anomaly Check
     if (senderHistory.avgAmount > 0 && amount > senderHistory.avgAmount * 5) {
         return { success: false, warning: true, message: `This transaction of $${amount.toFixed(2)} is much larger than your average of $${senderHistory.avgAmount.toFixed(2)}. Please confirm you want to proceed.`}
     }
   }
   
-  // AI Risk Analysis
   const historySummary = `User has made ${sender.history.totalTransactions} transactions with an average amount of $${sender.history.averageAmount.toFixed(2)}.`;
   const transactionDetails = `Amount: $${amount}, To: ${receiver.name}, Description: ${description}`;
 
@@ -87,11 +83,9 @@ export async function sendMoney(
     senderHistory: historySummary,
   });
 
-  // Update balances
   await db_updateUserBalance(sender.uid, sender.balance - amount);
   await db_updateUserBalance(receiver.uid, receiver.balance + amount);
 
-  // Record transaction
   await db_addTransaction({
     from: { uid: sender.uid, name: sender.name, email: sender.email },
     to: { uid: receiver.uid, name: receiver.name, email: receiver.email },
@@ -106,7 +100,7 @@ export async function sendMoney(
   revalidatePath('/dashboard');
   revalidatePath('/transactions');
   
-  return { success: true, message: 'Transaction successful.' };
+  return { success: true, message: 'Transaction successful!' };
 }
 
 
