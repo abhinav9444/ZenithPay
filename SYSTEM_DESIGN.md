@@ -23,8 +23,7 @@ A key feature of ZenithPay is its integration of Artificial Intelligence for pro
 
 ZenithPay follows a client-server architecture facilitated by Next.js. The design emphasizes the use of React Server Components (RSC) to separate server-side and client-side concerns, optimizing performance and security.
 
-![System Architecture Diagram](httpss://i.imgur.com/example.png)  
-*(Note: A diagram would visually represent this section, showing the flow from User -> Next.js Frontend -> Firebase/Genkit/Server Actions -> In-Memory DB)*
+![System Architecture Diagram](https://storage.googleapis.com/aifirebase-cloud-build-credit-card-generator/15a0cda5-673e-4614-9985-79a859d9a444.png)
 
 ### 2.1. Frontend Architecture
 
@@ -124,4 +123,3 @@ This is the most complex flow, involving UI interaction, data validation, fraud 
 *   **In-Memory Database**: Chosen for simplicity and rapid development. It allows the entire application to run without external dependencies. The major trade-off is the lack of data persistence. The data layer is cleanly abstracted in `src/lib/data.ts`, allowing for a future swap to a real database with minimal changes to the business logic in `src/lib/actions.ts`.
 *   **Genkit for AI**: Provides a structured way to define and call AI models. Using Zod schemas for input and output ensures that the data passed to and received from the LLM is strongly typed and predictable, which is crucial for reliability.
 *   **ShadCN UI**: Chosen for its "copy-and-paste" component model, which gives full ownership and control over the component code, making customization and extension straightforward.
-
